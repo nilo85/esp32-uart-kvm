@@ -1,8 +1,8 @@
 #include "SerialWsWrapper.h"
 
 const AsyncWebSocketSharedBuffer clearScreenSequence = std::make_shared<std::vector<uint8_t>>(std::vector<uint8_t>{
-    0x1b, 0x5b, 0x32, 0x4a
-});
+    0x1b, 'c'
+  });
 
 void SerialWsWrapper::setup() {
    const  HardwareSerial &hwSerial = serial;
