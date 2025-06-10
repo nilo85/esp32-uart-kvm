@@ -1,0 +1,65 @@
+:root {
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+
+	color: #222;
+	background-color: #ffffff;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	display: flex;
+	flex-flow: column;
+	height: 100%;
+}
+
+#app {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	flex-grow: 1;
+}
+
+header {
+	display: flex;
+	justify-content: flex-end;
+	background-color: #673ab8;
+}
+
+header nav {
+	display: flex;
+}
+header a, header .title {
+	color: #fff;
+}
+header a {
+	padding: 0.75rem;
+	text-decoration: none;
+}
+
+header .title {
+	flex-grow: 1;
+	margin: auto 0.75rem;
+	font-size: x-large;
+}
+
+header a.active {
+	background-color: #0005;
+}
+
+header a:hover {
+	background-color: #0008;
+}
+
+main {
+	flex-grow: 1;
+}
+

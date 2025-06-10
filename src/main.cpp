@@ -9,6 +9,8 @@
 
 #include "../secrets.h"
 
+#include "index.h"
+
 #define HOSTNAME "uartkwm0"
 
 static AsyncWebServer server(80);
@@ -24,6 +26,24 @@ void setup_wifi() {
     delay(1000);
   }
 }
+
+
+static const char *htmlContent PROGMEM = R"(
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ESP32-UART-KVM</title>
+		<script type="module" crossorigin src="/assets/index.js"></script>
+		<link rel="stylesheet" crossorigin href="/assets/index.css">
+	</head>
+	<body>
+		<div id="app" data-num-terminals="%NUM_TERMINALS%" data-host="%HOST%"></div>
+	</body>
+</html>
+)";
+static const size_t htmlContentLength = strlen_P(htmlContent);
 
 void setup_server() {
   for (int i = 0; i < NUM_SERIAL_WRAPPERS; i++) {
@@ -58,6 +78,34 @@ void setup_server() {
     request->send(200, "text/plain", "done");
 
   });
+
+  server.on("/assets/index.js", [](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse* resp = request->beginResponse(200, "text/javascript", index_js, sizeof(index_js));  
+    resp->addHeader("Cache-Control", "no-cache");
+    request->send(resp);
+  });
+
+
+  server.on("/assets/index.css", [](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse* resp = request->beginResponse(200, "text/css", index_css, sizeof(index_css));  
+    resp->addHeader("Cache-Control", "no-cache");
+    request->send(resp);
+  });
+
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse* resp = request->beginResponse(200, "text/html", htmlContent, [request](const String &var) -> String {
+      if (var == "HOST") {
+        return request->host();
+      }
+      if (var == "NUM_TERMINALS") {
+        return String(NUM_TERMINALS).c_str();
+      }
+      return emptyString;
+    });  
+    resp->addHeader("Cache-Control", "no-cache");
+    request->send(resp);
+  });
+
 
   server.begin();
 }
