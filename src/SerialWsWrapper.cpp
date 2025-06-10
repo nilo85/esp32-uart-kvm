@@ -1,9 +1,13 @@
 #include "SerialWsWrapper.h"
 
+const AsyncWebSocketSharedBuffer clearScreenSequence = std::make_shared<std::vector<uint8_t>>(std::vector<uint8_t>{
+    0x1b, 0x5b, 0x32, 0x4a
+});
+
 void SerialWsWrapper::setup() {
    const  HardwareSerial &hwSerial = serial;
 
-  handler.onConnect([](AsyncWebSocket *server, AsyncWebSocketClient *client) {
+  handler.onConnect([this](AsyncWebSocket *server, AsyncWebSocketClient *client) {
     //Serial.printf("Client %" PRIu32 " connected\n", client->id());
   });
 
@@ -50,4 +54,17 @@ void SerialWsWrapper::loop() {
     size_t read = serial.readBytes(buff, min((size_t)avail, sizeof(buff)));
     ws.binaryAll(buff, read);
   }
+}
+
+void SerialWsWrapper::clear() {
+  ws.binaryAll(clearScreenSequence);
+}
+
+void SerialWsWrapper::attach(Terminal* terminal) {
+  if (_terminal != NULL) {
+    _terminal->end(serial);
+  }
+  clear();
+  _terminal = terminal;
+  _terminal->begin(serial);
 }
