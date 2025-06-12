@@ -6,6 +6,8 @@ const AsyncWebSocketSharedBuffer clearScreenSequence = std::make_shared<std::vec
 
 void SerialWsWrapper::setup() {
    const  HardwareSerial &hwSerial = serial;
+  serial.setRxBufferSize(4096);
+  
 
   handler.onConnect([this](AsyncWebSocket *server, AsyncWebSocketClient *client) {
     //Serial.printf("Client %" PRIu32 " connected\n", client->id());
@@ -21,6 +23,7 @@ void SerialWsWrapper::setup() {
 
   handler.onMessage([this](AsyncWebSocket *server, AsyncWebSocketClient *client, const uint8_t *data, size_t len) {
     serial.write(data, len);
+    serial.flush();
     //Serial.printf("Recieved %s (%d)", data, len);
   });
 
@@ -42,18 +45,6 @@ void SerialWsWrapper::loop() {
     ws.cleanupClients();
     lastWS = millis();
   }
-  
-  // if queue is full, skip this loop run
-  if (!ws.availableForWriteAll()) {
-    return;
-  }
-
-  uint8_t buff[512];
-  int avail = serial.available();
-  if (avail) {
-    size_t read = serial.readBytes(buff, min((size_t)avail, sizeof(buff)));
-    ws.binaryAll(buff, read);
-  }
 }
 
 void SerialWsWrapper::clear() {
@@ -65,6 +56,14 @@ void SerialWsWrapper::attach(Terminal* terminal) {
     _terminal->end(serial);
   }
   clear();
+  serial.onReceive([this]() {
+      uint8_t buff[1024];
+      while(serial.available()) {
+        size_t read = serial.readBytes(buff, sizeof(buff));
+        ws.binaryAll(buff, read);
+      }
+  }, false);
+  serial.setTimeout(2);
   _terminal = terminal;
   _terminal->begin(serial);
 }
