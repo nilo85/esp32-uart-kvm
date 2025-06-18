@@ -15,6 +15,7 @@ private:
     HardwareSerial &serial;
     Terminal* _terminal;
 
+    void detach();
 public:
     AsyncWebSocket ws;
 

@@ -13,7 +13,11 @@ void SerialWsWrapper::setup() {
     //Serial.printf("Client %" PRIu32 " connected\n", client->id());
   });
 
-  handler.onDisconnect([](AsyncWebSocket *server, uint32_t clientId) {
+  handler.onDisconnect([this](AsyncWebSocket *server, uint32_t clientId) {
+    if (server->count() == 0) {
+      // detach if no more clients connected so that machines can reboot
+      this->detach();
+    }
     //Serial.printf("Client %" PRIu32 " disconnected\n", clientId);
   });
 
@@ -51,10 +55,15 @@ void SerialWsWrapper::clear() {
   ws.binaryAll(clearScreenSequence);
 }
 
-void SerialWsWrapper::attach(Terminal* terminal) {
+void SerialWsWrapper::detach() {
   if (_terminal != NULL) {
     _terminal->end(serial);
   }
+  _terminal = NULL;
+}
+
+void SerialWsWrapper::attach(Terminal* terminal) {
+
   clear();
   serial.onReceive([this]() {
       uint8_t buff[1024];
